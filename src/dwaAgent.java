@@ -1,14 +1,18 @@
 package jadelab1;
 
-import jade.core.*;
-import jade.core.behaviours.*;
-import jade.lang.acl.*;
-import jade.domain.*;
-import jade.domain.FIPAAgentManagement.*;
-import java.net.*;
-import java.io.*;
+import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
-public class ServiceAgent extends Agent {
+import java.io.*;
+import java.net.*;
+
+public class dwaAgent extends Agent {
 	protected void setup () {
 		//services registration at DF
 		DFAgentDescription dfad = new DFAgentDescription();
@@ -16,22 +20,16 @@ public class ServiceAgent extends Agent {
 		//service no 1
 		ServiceDescription sd1 = new ServiceDescription();
 		sd1.setType("answers");
-		sd1.setName("wordnet");
-		//service no 2
-		ServiceDescription sd2 = new ServiceDescription();
-		sd2.setType("answers");
-		sd2.setName("plfr");
+		sd1.setName("polita");
 		//add them all
 		dfad.addServices(sd1);
-		dfad.addServices(sd2);
 		try {
 			DFService.register(this,dfad);
 		} catch (FIPAException ex) {
 			ex.printStackTrace();
 		}
-		
-		addBehaviour(new WordnetCyclicBehaviour(this));
-		addBehaviour(new DictionaryCyclicBehaviour(this));
+
+		addBehaviour(new DictionaryDwa(this));
 		//doDelete();
 	}
 	protected void takeDown() {
@@ -81,52 +79,17 @@ public class ServiceAgent extends Agent {
 	}
 }
 
-class WordnetCyclicBehaviour extends CyclicBehaviour
-{
-	ServiceAgent agent;
-	public WordnetCyclicBehaviour(ServiceAgent agent)
-	{
-		this.agent = agent;
-	}
-	public void action()
-	{
-		MessageTemplate template = MessageTemplate.MatchOntology("wordnet");
-		ACLMessage message = agent.receive(template);
-		if (message == null)
-		{
-			block();
-		}
-		else
-		{
-			//process the incoming message
-			String content = message.getContent();
-			ACLMessage reply = message.createReply();
-			reply.setPerformative(ACLMessage.INFORM);
-			String response = "";
-			try
-			{
-				response = agent.makeRequest("wn",content);
-			}
-			catch (NumberFormatException ex)
-			{
-				response = ex.getMessage();
-			}
-			reply.setContent(response);
-			agent.send(reply);
-		}
-	}
-}
 
-class DictionaryCyclicBehaviour extends CyclicBehaviour
+class DictionaryDwa extends CyclicBehaviour
 {
-	ServiceAgent agent;
-	public DictionaryCyclicBehaviour(ServiceAgent agent)
+	dwaAgent agent;
+	public DictionaryDwa(dwaAgent agent)
 	{
 		this.agent = agent;
 	}
 	public void action()
 	{
-		MessageTemplate template = MessageTemplate.MatchOntology("plfr");
+		MessageTemplate template = MessageTemplate.MatchOntology("polita");
 		ACLMessage message = agent.receive(template);
 		if (message == null)
 		{
@@ -141,7 +104,7 @@ class DictionaryCyclicBehaviour extends CyclicBehaviour
 			String response = "";
 			try
 			{
-				response = agent.makeRequest("fd-pol-fr", content);
+				response = agent.makeRequest("fd-pol-ita", content);
 			}
 			catch (NumberFormatException ex)
 			{
